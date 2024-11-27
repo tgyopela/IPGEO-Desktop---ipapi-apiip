@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Net.Http;
 using System.Security.Policy;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace IPGEO
 {
@@ -24,13 +25,17 @@ namespace IPGEO
         private async void button1_Click(object sender, EventArgs e)
         {
             richTextBox1.Clear();
-            string ipAddress;
+            string ipAddress = textBox2.Text; ;
             string command;
             string kulcs;
+            if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
+            {
+                MessageBox.Show("Érvénytelen IP-cím formátum!");
+                return;
+            }
             //*ipapi.co
             if (radioButton1.Checked == true)
             {
-                ipAddress = textBox2.Text;
                 command = $"curl 'https://ipapi.co/{ipAddress}/json'";
                 try
                 {
@@ -69,7 +74,6 @@ namespace IPGEO
             //ip-api.com
             if (radioButton3.Checked == true)
             {
-                ipAddress = textBox2.Text;
                 kulcs = textBox3.Text;
                 command = $"curl 'http://ip-api.com/json/{ipAddress}?fields=continent,countryCode,city,timezone,isp,org,as'";
                 try
