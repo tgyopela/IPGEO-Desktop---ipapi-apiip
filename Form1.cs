@@ -23,6 +23,7 @@ namespace IPGEO
 
         private async void button1_Click(object sender, EventArgs e)
         {
+            richTextBox1.Clear();
             string ipAddress;
             string command;
             string kulcs;
@@ -48,7 +49,7 @@ namespace IPGEO
                 if (textBox3.Text.Length > 0) 
                 {
                     kulcs = textBox3.Text;
-                    command = $"curl 'https://apiip.net/api/check?ip={ipAddress}&accessKey={kulcs}&output=json'";
+                    command = $"curl 'https://apiip.net/api/check?ip={ipAddress}&fields=countryCode,continentCode,capital&accessKey={kulcs}&output=json'";
                     try
                     {
                         string output = RunPowerShellCommand(command);
@@ -70,7 +71,7 @@ namespace IPGEO
             {
                 ipAddress = textBox2.Text;
                 kulcs = textBox3.Text;
-                command = $"curl 'http://ip-api.com/json/{ipAddress}'";
+                command = $"curl 'http://ip-api.com/json/{ipAddress}?fields=continent,countryCode,city,timezone,isp,org,as'";
                 try
                 {
                     string output = RunPowerShellCommand(command);
@@ -114,6 +115,7 @@ namespace IPGEO
 
         private void button2_Click(object sender, EventArgs e) // A feloldandó domain
         {
+            listBox1.Items.Clear();
             string domain = textBox1.Text; 
             string command = $"(Resolve-DnsName {domain}).IPAddress ";
             try
