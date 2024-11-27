@@ -64,8 +64,22 @@ namespace IPGEO
                     MessageBox.Show("Nincs megadva a lekérési kulcs...");
                     textBox3.Focus(); 
                 }
-
-                
+            }
+            //ip-api.com
+            if (radioButton3.Checked == true)
+            {
+                ipAddress = textBox2.Text;
+                kulcs = textBox3.Text;
+                command = $"curl 'http://ip-api.com/json/{ipAddress}'";
+                try
+                {
+                    string output = RunPowerShellCommand(command);
+                    richTextBox1.Text = output;
+                }
+                catch (Exception ex)
+                {
+                    richTextBox1.Text += ex.Message;
+                }
             }
         }
         private string RunPowerShellCommand(string command) //*IP lekérés
