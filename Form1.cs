@@ -81,16 +81,18 @@ namespace IPGEO
             {
                 try
                 {
-                    richTextBox1.Text = await PerformHttpRequestAsync(url);   
+                    richTextBox1.Text = await PerformHttpRequestAsync(url);
+                    string formattedJson = FormatJson(richTextBox1.Text);
+                    richTextBox1.Text = formattedJson;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Hiba történt: {ex.Message}");
                 }
-                string formattedJson = FormatJson(richTextBox1.Text);
-                richTextBox1.Text = formattedJson;
             }
+            
         }
+        
 
         private string RunPowerShellCommand(string command) //*IP lekérés
         {
