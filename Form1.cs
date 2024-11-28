@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Security.Policy;
 
 namespace IPGEO
 {
@@ -21,13 +22,12 @@ namespace IPGEO
         {
             InitializeComponent();
         }
-
+        private const string IpApiBaseUrl = "https://ipapi.co/";
         private string PerformHttpRequest(string url)
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
-
             using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
             using (var reader = new System.IO.StreamReader(response.GetResponseStream(), UTF8Encoding.UTF8))
             {
@@ -38,25 +38,22 @@ namespace IPGEO
         private async void button1_Click(object sender, EventArgs e)
         {
             richTextBox1.Clear();
-            string ipAddress = textBox2.Text; ;
-            string command;
-            string apiKey;
-            string kertcim;
+            string ipAddress = textBox2.Text;
+            string kertcim ="";
+            string url1 = "";
             if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
             {
                 MessageBox.Show("Érvénytelen IP-cím formátum!");
                 return;
             }
-            //*ipapi.co
-            if (radioButton1.Checked == true)
-            {
+            if (radioButton1.Checked)
+            {//*ipapi.co
                 kertcim = "https://ipapi.co/" + ipAddress + "/json";
                 richTextBox1.Text = PerformHttpRequest(kertcim);
             }
-            //apiip.net
-            if (radioButton2.Checked == true)
-            {
-                if (textBox3.Text.Length > 0) 
+            else if (radioButton2.Checked)
+            { //apiip.net
+                if (textBox3.Text.Length > 0)
                 {
                     if (!Regex.IsMatch(textBox3.Text, @"^[a-zA-Z0-9-]+$"))
                     {
@@ -69,14 +66,12 @@ namespace IPGEO
                 else
                 {
                     MessageBox.Show("Nincs megadva a lekérési kulcs...");
-                    textBox3.Focus(); 
+                    textBox3.Focus();
                 }
             }
-            //ip-api.com
-            if (radioButton3.Checked == true)
-            {
+            else if (radioButton3.Checked)
+            {//ip-api.com
                 string url = $"http://ip-api.com/json/{ipAddress}";
-                
                 try
                 {
                     using (var httpClient = new HttpClient())
@@ -143,7 +138,7 @@ namespace IPGEO
             textBox2.Text = listBox1.GetItemText(listBox1.SelectedItem);
         }
 
-        private async void button3_Click(object sender, EventArgs e)
+        private void button3_Click(object sender, EventArgs e)
         {//*tesztelos
             
         }
