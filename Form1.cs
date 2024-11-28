@@ -22,6 +22,19 @@ namespace IPGEO
             InitializeComponent();
         }
 
+        private string PerformHttpRequest(string url)
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (var reader = new System.IO.StreamReader(response.GetResponseStream(), UTF8Encoding.UTF8))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
         private async void button1_Click(object sender, EventArgs e)
         {
             richTextBox1.Clear();
@@ -38,26 +51,20 @@ namespace IPGEO
             if (radioButton1.Checked == true)
             {
                 kertcim = "https://ipapi.co/" + ipAddress + "/json";
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(kertcim);
-                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                var reader = new System.IO.StreamReader(response.GetResponseStream(), UTF8Encoding.UTF8);
-                richTextBox1.Text = reader.ReadToEnd();
+                richTextBox1.Text = PerformHttpRequest(kertcim);
             }
             //apiip.net
             if (radioButton2.Checked == true)
             {
                 if (textBox3.Text.Length > 0) 
                 {
-                    apiKey = textBox3.Text;
+                    if (!Regex.IsMatch(textBox3.Text, @"^[a-zA-Z0-9-]+$"))
+                    {
+                        MessageBox.Show("Érvénytelen API kulcs!");
+                        return;
+                    }
                     kertcim = "https://apiip.net/api/check?ip=" + ipAddress + "&accessKey=" + textBox3.Text + "&output=json";
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(kertcim);
-                    request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                    var reader = new System.IO.StreamReader(response.GetResponseStream(), UTF8Encoding.UTF8);
-                    richTextBox1.Text = reader.ReadToEnd();
+                    richTextBox1.Text = PerformHttpRequest(kertcim);
                 }
                 else
                 {
@@ -69,6 +76,7 @@ namespace IPGEO
             if (radioButton3.Checked == true)
             {
                 string url = $"http://ip-api.com/json/{ipAddress}";
+                
                 try
                 {
                     using (var httpClient = new HttpClient())
@@ -83,6 +91,7 @@ namespace IPGEO
                 }
             }
         }
+
         private string RunPowerShellCommand(string command) //*IP lekérés
         {
             using (Process process = new Process())
@@ -125,9 +134,10 @@ namespace IPGEO
             }
             catch (Exception ex)
             {
-
+                MessageBox.Show("Hiba történt: " + ex.Message);
             }
         }
+
         private void listBox1_SelectedIndexChanged_1(object sender, EventArgs e)
         {
             textBox2.Text = listBox1.GetItemText(listBox1.SelectedItem);
