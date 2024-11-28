@@ -81,12 +81,14 @@ namespace IPGEO
             {
                 try
                 {
-                    richTextBox1.Text = await PerformHttpRequestAsync(url);
+                    richTextBox1.Text = await PerformHttpRequestAsync(url);   
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Hiba történt: {ex.Message}");
                 }
+                string formattedJson = FormatJson(richTextBox1.Text);
+                richTextBox1.Text = formattedJson;
             }
         }
 
@@ -146,17 +148,19 @@ namespace IPGEO
             {
                 using (var httpClient = new HttpClient())
                 {
-                    // TLS protokoll konfiguráció (általában nem szükséges explicit)
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12; // TLS protokoll konfiguráció (általában nem szükséges explicit)
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"); // User-Agent beállítása
+                    string response = await httpClient.GetStringAsync(url); // Kérés elküldése
+                    return response; // Válasz visszaadása
+                    //*
+                    //string response = await PerformHttpRequestAsync(url);
 
-                    // User-Agent beállítása
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
+                    // JSON formázása
+//                    string formattedJson = FormatJson(response);
 
-                    // Kérés elküldése
-                    string response = await httpClient.GetStringAsync(url);
-
-                    // Válasz visszaadása
-                    return response;
+                    // Megjelenítés RichTextBox-ban
+                  //  richTextBox1.Text = formattedJson;
+                    //*
                 }
             }
             catch (HttpRequestException ex)
@@ -166,60 +170,33 @@ namespace IPGEO
                 return null;
             }
         }
+
         //*
-        private async void button3_Click(object sender, EventArgs e)
+        private string FormatJson(string json)
+        {
+            try
+            {
+                // JSON deszerializálása objektumként
+                var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
+
+                // Újraformázás szépen behúzva
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true // Behúzás engedélyezése
+                };
+                return JsonSerializer.Serialize(jsonElement, options);
+            }
+            catch (JsonException ex)
+            {
+                // Hiba esetén visszaadjuk az eredeti JSON-t
+                return $"Hiba a JSON formázásában: {ex.Message}\n\nEredeti JSON:\n{json}";
+            }
+        }
+        //*
+        private void button3_Click(object sender, EventArgs e)
         {//*tesztelos
          //*
-            richTextBox1.Clear();
-            string ipAddress = textBox2.Text;
 
-            if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
-            {
-                MessageBox.Show("Érvénytelen IP-cím formátum!");
-                return;
-            }
-            string url = null;
-            if (radioButton1.Checked)
-            {
-                url = $"{IpApiBaseUrl}{ipAddress}/json";
-                string response = await PerformHttpRequestAsync(url);
-                if (response != null)
-                {
-                    richTextBox1.Text = response;
-                }
-            }
-            else if (radioButton2.Checked)
-            {
-                if (string.IsNullOrWhiteSpace(textBox3.Text) ||
-                    !Regex.IsMatch(textBox3.Text, @"^[a-zA-Z0-9-]+$"))
-                {
-                    MessageBox.Show("Érvénytelen vagy hiányzó API kulcs!");
-                    textBox3.Focus();
-                    return;
-                }
-                url = $"{ApiIpBaseUrl}{ipAddress}&accessKey={textBox3.Text}&output=json";
-                string response = await PerformHttpRequestAsync(url);
-                if (response != null)
-                {
-                    richTextBox1.Text = response;
-                }
-            }
-            else if (radioButton3.Checked)
-            {
-                url = $"{IpApiComBaseUrl}/json/{ipAddress}";
-            }
-
-            if (url != null)
-            {
-                try
-                {
-                    richTextBox1.Text = await PerformHttpRequestAsync(url);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Hiba történt: {ex.Message}");
-                }
-            }
             //*
         }
     }
