@@ -34,12 +34,6 @@ namespace IPGEO
         {
             richTextBox1.Clear();
             string ipAddress = textBox2.Text;
-            
-            if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
-            {
-                MessageBox.Show("Érvénytelen IP-cím formátum!");
-                return;
-            }
             richTextBox1.Clear();
             if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
             {
@@ -51,10 +45,7 @@ namespace IPGEO
             {
                 url = $"{IpApiBaseUrl}{ipAddress}/json";
                 string response = await PerformHttpRequestAsync(url);
-                if (response != null)
-                {
-                    richTextBox1.Text = response;
-                }
+                await ProcessResponse(url);
             }
             else if (radioButton2.Checked)
             {
@@ -67,32 +58,14 @@ namespace IPGEO
                 }
                 url = $"{ApiIpBaseUrl}{ipAddress}&accessKey={textBox3.Text}&output=json";
                 string response = await PerformHttpRequestAsync(url);
-                if (response != null)
-                {
-                    richTextBox1.Text = response;
-                }
+                await ProcessResponse(url);
             }
             else if (radioButton3.Checked)
             {
                 url = $"{IpApiComBaseUrl}/json/{ipAddress}";
+                await ProcessResponse(url);
             }
-
-            if (url != null)
-            {
-                try
-                {
-                    richTextBox1.Text = await PerformHttpRequestAsync(url);
-                    string formattedJson = FormatJson(richTextBox1.Text);
-                    richTextBox1.Text = formattedJson;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Hiba történt: {ex.Message}");
-                }
-            }
-            
         }
-        
 
         private string RunPowerShellCommand(string command) //*IP lekérés
         {
@@ -154,35 +127,31 @@ namespace IPGEO
                     httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"); // User-Agent beállítása
                     string response = await httpClient.GetStringAsync(url); // Kérés elküldése
                     return response; // Válasz visszaadása
-                    //*
-                    //string response = await PerformHttpRequestAsync(url);
-
-                    // JSON formázása
-//                    string formattedJson = FormatJson(response);
-
-                    // Megjelenítés RichTextBox-ban
-                  //  richTextBox1.Text = formattedJson;
-                    //*
                 }
             }
             catch (HttpRequestException ex)
             {
-                // Hibaüzenet megjelenítése
-                MessageBox.Show("Hálózati hiba történt: " + ex.Message);
+                MessageBox.Show("Hálózati hiba történt: " + ex.Message); // Hibaüzenet megjelenítése
                 return null;
             }
         }
 
-        //*
+        private async Task ProcessResponse(string url)
+        {
+            string response = await PerformHttpRequestAsync(url);
+            if (response != null)
+            {
+                string formattedJson = FormatJson(response);
+                richTextBox1.Text = formattedJson;
+            }
+        }
+
         private string FormatJson(string json)
         {
             try
             {
-                // JSON deszerializálása objektumként
-                var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
-
-                // Újraformázás szépen behúzva
-                var options = new JsonSerializerOptions
+                var jsonElement = JsonSerializer.Deserialize<JsonElement>(json); // JSON deszerializálása objektumként
+                var options = new JsonSerializerOptions   // Újraformázás szépen behúzva
                 {
                     WriteIndented = true // Behúzás engedélyezése
                 };
@@ -190,8 +159,7 @@ namespace IPGEO
             }
             catch (JsonException ex)
             {
-                // Hiba esetén visszaadjuk az eredeti JSON-t
-                return $"Hiba a JSON formázásában: {ex.Message}\n\nEredeti JSON:\n{json}";
+                return $"Hiba a JSON formázásában: {ex.Message}\n\nEredeti JSON:\n{json}";// Hiba esetén visszaadjuk az eredeti JSON-t
             }
         }
         //*
