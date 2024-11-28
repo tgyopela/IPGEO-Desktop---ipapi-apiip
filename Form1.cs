@@ -29,6 +29,7 @@ namespace IPGEO
         private const string IpApiBaseUrl = "https://ipapi.co/";
         private const string IpApiComBaseUrl = "http://ip-api.com/";
         private const string IpApiKeyQuery = "&output=json";
+        private static readonly HttpClient httpClient = new HttpClient();
 
         private async void button1_Click(object sender, EventArgs e)
         {
@@ -77,14 +78,11 @@ namespace IPGEO
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
-                // PowerShell futtatása
                 process.Start();
-                // Kimenet és hibaüzenet olvasása
                 string output = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
-                // Ha van hiba, dobjuk kivételként
-                if (!string.IsNullOrEmpty(error))
+                if (!string.IsNullOrEmpty(error)) // Ha van hiba, dobjuk kivételként
                 {
                     throw new Exception(error);
                 }
@@ -162,7 +160,7 @@ namespace IPGEO
                 return $"Hiba a JSON formázásában: {ex.Message}\n\nEredeti JSON:\n{json}";// Hiba esetén visszaadjuk az eredeti JSON-t
             }
         }
-        //*
+        
         private void button3_Click(object sender, EventArgs e)
         {//*tesztelos
          //*
