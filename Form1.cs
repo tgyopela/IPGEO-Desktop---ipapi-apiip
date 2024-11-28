@@ -12,7 +12,9 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.Security.Policy;
-
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Xml;
 namespace IPGEO
 {
     public partial class Form1 : Form
@@ -22,7 +24,7 @@ namespace IPGEO
         {
             InitializeComponent();
         }
-        private const string IpApiBaseUrl = "https://ipapi.co/";
+
         private string PerformHttpRequest(string url)
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -34,6 +36,11 @@ namespace IPGEO
                 return reader.ReadToEnd();
             }
         }
+
+        private const string ApiIpBaseUrl = "https://apiip.net/api/check?ip=";
+        private const string IpApiBaseUrl = "https://ipapi.co/";
+        private const string IpApiComBaseUrl = "http://ip-api.com/";
+        private const string IpApiKeyQuery = "&output=json";
 
         private async void button1_Click(object sender, EventArgs e)
         {
@@ -108,7 +115,6 @@ namespace IPGEO
                 {
                     throw new Exception(error);
                 }
-
                 return output;
             }
         }
@@ -138,9 +144,88 @@ namespace IPGEO
             textBox2.Text = listBox1.GetItemText(listBox1.SelectedItem);
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        //*
+        private async Task<string> PerformHttpRequestAsync(string url)
+        {
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    // TLS protokoll konfiguráció (általában nem szükséges explicit)
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                    // User-Agent beállítása
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
+
+                    // Kérés elküldése
+                    string response = await httpClient.GetStringAsync(url);
+
+                    // Válasz visszaadása
+                    return response;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // Hibaüzenet megjelenítése
+                MessageBox.Show("Hálózati hiba történt: " + ex.Message);
+                return null;
+            }
+        }
+        //*
+        private async void button3_Click(object sender, EventArgs e)
         {//*tesztelos
-            
+         //*
+            richTextBox1.Clear();
+            string ipAddress = textBox2.Text;
+
+            if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
+            {
+                MessageBox.Show("Érvénytelen IP-cím formátum!");
+                return;
+            }
+            string url = null;
+            if (radioButton1.Checked)
+            {
+                url = $"{IpApiBaseUrl}{ipAddress}/json";
+                string response = await PerformHttpRequestAsync(url);
+                if (response != null)
+                {
+                    richTextBox1.Text = response;
+                }
+            }
+            else if (radioButton2.Checked)
+            {
+                if (string.IsNullOrWhiteSpace(textBox3.Text) ||
+                    !Regex.IsMatch(textBox3.Text, @"^[a-zA-Z0-9-]+$"))
+                {
+                    MessageBox.Show("Érvénytelen vagy hiányzó API kulcs!");
+                    textBox3.Focus();
+                    return;
+                }
+                url = $"{ApiIpBaseUrl}{ipAddress}&accessKey={textBox3.Text}&output=json";
+                string response = await PerformHttpRequestAsync(url);
+                if (response != null)
+                {
+                    richTextBox1.Text = response;
+                }
+            }
+            else if (radioButton3.Checked)
+            {
+                url = $"{IpApiComBaseUrl}/json/{ipAddress}";
+            }
+
+            if (url != null)
+            {
+                try
+                {
+                    richTextBox1.Text = await PerformHttpRequestAsync(url);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Hiba történt: {ex.Message}");
+                }
+            }
+            //*
         }
     }
 }
