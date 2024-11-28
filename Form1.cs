@@ -25,18 +25,6 @@ namespace IPGEO
             InitializeComponent();
         }
 
-        private string PerformHttpRequest(string url)
-        {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (var reader = new System.IO.StreamReader(response.GetResponseStream(), UTF8Encoding.UTF8))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
         private const string ApiIpBaseUrl = "https://apiip.net/api/check?ip=";
         private const string IpApiBaseUrl = "https://ipapi.co/";
         private const string IpApiComBaseUrl = "http://ip-api.com/";
@@ -46,50 +34,58 @@ namespace IPGEO
         {
             richTextBox1.Clear();
             string ipAddress = textBox2.Text;
-            string kertcim ="";
-            string url1 = "";
+            
             if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
             {
                 MessageBox.Show("Érvénytelen IP-cím formátum!");
                 return;
             }
+            richTextBox1.Clear();
+            if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
+            {
+                MessageBox.Show("Érvénytelen IP-cím formátum!");
+                return;
+            }
+            string url = null;
             if (radioButton1.Checked)
-            {//*ipapi.co
-                kertcim = "https://ipapi.co/" + ipAddress + "/json";
-                richTextBox1.Text = PerformHttpRequest(kertcim);
+            {
+                url = $"{IpApiBaseUrl}{ipAddress}/json";
+                string response = await PerformHttpRequestAsync(url);
+                if (response != null)
+                {
+                    richTextBox1.Text = response;
+                }
             }
             else if (radioButton2.Checked)
-            { //apiip.net
-                if (textBox3.Text.Length > 0)
+            {
+                if (string.IsNullOrWhiteSpace(textBox3.Text) ||
+                    !Regex.IsMatch(textBox3.Text, @"^[a-zA-Z0-9-]+$"))
                 {
-                    if (!Regex.IsMatch(textBox3.Text, @"^[a-zA-Z0-9-]+$"))
-                    {
-                        MessageBox.Show("Érvénytelen API kulcs!");
-                        return;
-                    }
-                    kertcim = "https://apiip.net/api/check?ip=" + ipAddress + "&accessKey=" + textBox3.Text + "&output=json";
-                    richTextBox1.Text = PerformHttpRequest(kertcim);
-                }
-                else
-                {
-                    MessageBox.Show("Nincs megadva a lekérési kulcs...");
+                    MessageBox.Show("Érvénytelen vagy hiányzó API kulcs!");
                     textBox3.Focus();
+                    return;
+                }
+                url = $"{ApiIpBaseUrl}{ipAddress}&accessKey={textBox3.Text}&output=json";
+                string response = await PerformHttpRequestAsync(url);
+                if (response != null)
+                {
+                    richTextBox1.Text = response;
                 }
             }
             else if (radioButton3.Checked)
-            {//ip-api.com
-                string url = $"http://ip-api.com/json/{ipAddress}";
+            {
+                url = $"{IpApiComBaseUrl}/json/{ipAddress}";
+            }
+
+            if (url != null)
+            {
                 try
                 {
-                    using (var httpClient = new HttpClient())
-                    {
-                        var response = await httpClient.GetStringAsync(url);
-                        richTextBox1.Text = response;
-                    }
+                    richTextBox1.Text = await PerformHttpRequestAsync(url);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Hiba történt az adatok lekérése során: " + ex.Message);
+                    MessageBox.Show($"Hiba történt: {ex.Message}");
                 }
             }
         }
@@ -144,7 +140,6 @@ namespace IPGEO
             textBox2.Text = listBox1.GetItemText(listBox1.SelectedItem);
         }
 
-        //*
         private async Task<string> PerformHttpRequestAsync(string url)
         {
             try
