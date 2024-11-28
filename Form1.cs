@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Http;
-using System.Security.Policy;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Net;
 
 namespace IPGEO
 {
@@ -27,7 +27,8 @@ namespace IPGEO
             richTextBox1.Clear();
             string ipAddress = textBox2.Text; ;
             string command;
-            string kulcs;
+            string apiKey;
+            string kertcim;
             if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
             {
                 MessageBox.Show("Érvénytelen IP-cím formátum!");
@@ -36,34 +37,27 @@ namespace IPGEO
             //*ipapi.co
             if (radioButton1.Checked == true)
             {
-                command = $"curl 'https://ipapi.co/{ipAddress}/json'";
-                try
-                {
-                    string output = RunPowerShellCommand(command);
-                    richTextBox1.Text = output;
-                }
-                catch (Exception ex)
-                {
-                    richTextBox1.Text += ex.Message;
-                }
+                kertcim = "https://ipapi.co/" + ipAddress + "/json";
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(kertcim);
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                var reader = new System.IO.StreamReader(response.GetResponseStream(), UTF8Encoding.UTF8);
+                richTextBox1.Text = reader.ReadToEnd();
             }
             //apiip.net
             if (radioButton2.Checked == true)
             {
-                ipAddress = textBox2.Text;
                 if (textBox3.Text.Length > 0) 
                 {
-                    kulcs = textBox3.Text;
-                    command = $"curl 'https://apiip.net/api/check?ip={ipAddress}&fields=countryCode,continentCode,capital&accessKey={kulcs}&output=json'";
-                    try
-                    {
-                        string output = RunPowerShellCommand(command);
-                        richTextBox1.Text = output;
-                    }
-                    catch (Exception ex)
-                    {
-                        richTextBox1.Text += ex.Message;
-                    }
+                    apiKey = textBox3.Text;
+                    kertcim = "https://apiip.net/api/check?ip=" + ipAddress + "&accessKey=" + textBox3.Text + "&output=json";
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(kertcim);
+                    request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    var reader = new System.IO.StreamReader(response.GetResponseStream(), UTF8Encoding.UTF8);
+                    richTextBox1.Text = reader.ReadToEnd();
                 }
                 else
                 {
@@ -74,16 +68,18 @@ namespace IPGEO
             //ip-api.com
             if (radioButton3.Checked == true)
             {
-                kulcs = textBox3.Text;
-                command = $"curl 'http://ip-api.com/json/{ipAddress}?fields=continent,countryCode,city,timezone,isp,org,as'";
+                string url = $"http://ip-api.com/json/{ipAddress}";
                 try
                 {
-                    string output = RunPowerShellCommand(command);
-                    richTextBox1.Text = output;
+                    using (var httpClient = new HttpClient())
+                    {
+                        var response = await httpClient.GetStringAsync(url);
+                        richTextBox1.Text = response;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    richTextBox1.Text += ex.Message;
+                    MessageBox.Show("Hiba történt az adatok lekérése során: " + ex.Message);
                 }
             }
         }
@@ -97,16 +93,12 @@ namespace IPGEO
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
-
                 // PowerShell futtatása
                 process.Start();
-
                 // Kimenet és hibaüzenet olvasása
                 string output = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();
-
                 process.WaitForExit();
-
                 // Ha van hiba, dobjuk kivételként
                 if (!string.IsNullOrEmpty(error))
                 {
@@ -133,11 +125,17 @@ namespace IPGEO
             }
             catch (Exception ex)
             {
+
             }
         }
         private void listBox1_SelectedIndexChanged_1(object sender, EventArgs e)
         {
             textBox2.Text = listBox1.GetItemText(listBox1.SelectedItem);
+        }
+
+        private async void button3_Click(object sender, EventArgs e)
+        {//*tesztelos
+            
         }
     }
 }
