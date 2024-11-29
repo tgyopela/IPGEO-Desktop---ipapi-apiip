@@ -15,6 +15,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
 using System.IO;
+using System.Security.Policy;
 namespace IPGEO
 {
     public partial class Form1 : Form
@@ -91,6 +92,7 @@ namespace IPGEO
         {
             using (Process process = new Process())
             {
+                Cursor = Cursors.WaitCursor;
                 process.StartInfo.FileName = "powershell.exe";
                 process.StartInfo.Arguments = $"-NoProfile -Command \"{command}\"";
                 process.StartInfo.RedirectStandardOutput = true;
@@ -105,6 +107,7 @@ namespace IPGEO
                 {
                     throw new Exception(error);
                 }
+                Cursor = Cursors.Default;
                 return output;
             }
         }
