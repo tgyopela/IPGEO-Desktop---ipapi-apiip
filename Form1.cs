@@ -26,6 +26,12 @@ namespace IPGEO
         public Form1()
         {
             InitializeComponent();
+        
+        }
+
+        static Form1()
+        {
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
         }
 
         private const string ApiIpBaseUrl = "https://apiip.net/api/check?ip=";
@@ -33,7 +39,10 @@ namespace IPGEO
         private const string IpApiComBaseUrl = "http://ip-api.com/";
         private const string IpGeolocationBaseUrl = "https://api.ipgeolocation.io/ipgeo?apiKey=";
         private const string IpApiKeyQuery = "&output=json";
-        private static readonly HttpClient httpClient = new HttpClient();
+        private static readonly HttpClient httpClient = new HttpClient()
+        {
+            Timeout = TimeSpan.FromSeconds(30)
+        };
 
         private async void button1_Click(object sender, EventArgs e)
         {
@@ -136,14 +145,9 @@ namespace IPGEO
         private async Task<string> PerformHttpRequestAsync(string url)
         {
             try
-            {
-                using (var httpClient = new HttpClient())
-                {
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12; // TLS protokoll konfiguráció (általában nem szükséges explicit)
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"); // User-Agent beállítása
-                    string response = await httpClient.GetStringAsync(url); // Kérés elküldése
-                    return response; // Válasz visszaadása
-                }
+            {              
+                string response = await httpClient.GetStringAsync(url); // Kérés elküldése
+                return response; // Válasz visszaadása
             }
             catch (HttpRequestException ex)
             {
