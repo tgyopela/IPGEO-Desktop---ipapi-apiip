@@ -26,21 +26,12 @@ namespace IPGEO
         public Form1()
         {
             InitializeComponent();
-            apiKeysFile = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-            apiSecret = apiKeysFile + "\\apy.txt";
-            if (File.Exists(apiSecret))
-            {
-                textBox3.Text = File.ReadAllText(apiSecret);
-            }
-            else
-            {
-                
-            }
         }
 
         private const string ApiIpBaseUrl = "https://apiip.net/api/check?ip=";
         private const string IpApiBaseUrl = "https://ipapi.co/";
         private const string IpApiComBaseUrl = "http://ip-api.com/";
+        private const string IpGeolocationBaseUrl = "https://api.ipgeolocation.io/ipgeo?apiKey=";
         private const string IpApiKeyQuery = "&output=json";
         private static readonly HttpClient httpClient = new HttpClient();
 
@@ -49,11 +40,12 @@ namespace IPGEO
             richTextBox1.Clear();
             string ipAddress = textBox2.Text;
             richTextBox1.Clear();
+            /*
             if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
             {
                 MessageBox.Show("Érvénytelen IP-cím formátum!");
                 return;
-            }
+            }*/
             string url = null;
             if (radioButton1.Checked)
             {
@@ -77,6 +69,19 @@ namespace IPGEO
             else if (radioButton3.Checked)
             {
                 url = $"{IpApiComBaseUrl}/json/{ipAddress}";
+                await ProcessResponse(url);
+            }
+            else if (radioButton4.Checked) 
+            {
+                if (string.IsNullOrWhiteSpace(textBox3.Text) ||
+                        !Regex.IsMatch(textBox3.Text, @"^[a-zA-Z0-9-]+$"))
+                {
+                    MessageBox.Show("Érvénytelen vagy hiányzó API kulcs!");
+                    textBox3.Focus();
+                    return;
+                }
+                url = $"{IpGeolocationBaseUrl}{textBox3.Text}&ip={textBox2.Text}&output=json";
+                string response = await PerformHttpRequestAsync(url);
                 await ProcessResponse(url);
             }
         }
@@ -173,7 +178,46 @@ namespace IPGEO
                 return $"Hiba a JSON formázásában: {ex.Message}\n\nEredeti JSON:\n{json}";// Hiba esetén visszaadjuk az eredeti JSON-t
             }
         }
-        
+        private void textBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F1) {button2_Click(sender, e);}
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton2.Checked)
+            {    
+                apiKeysFile = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+                apiSecret = apiKeysFile + "\\apiip.api";
+                if (File.Exists(apiSecret))
+                {
+                    textBox3.Text = File.ReadAllText(apiSecret);
+                }
+                else
+                {
+                    textBox3.Text = "Hiányzó / Missing ApiKey";
+                } 
+            }
+            else { textBox3.Text = ""; }
+        }
+
+        private void radioButton4_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton4.Checked)
+            {
+                apiKeysFile = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+                apiSecret = apiKeysFile + "\\ipgeo.api";
+                if (File.Exists(apiSecret))
+                {
+                    textBox3.Text = File.ReadAllText(apiSecret);
+                }
+                else
+                {
+                    textBox3.Text = "Hiányzó / Missing ApiKey";
+                }
+            }
+            else { textBox3.Text = ""; }
+        }
         private void button3_Click(object sender, EventArgs e)
         {//*tesztelos
          //*
