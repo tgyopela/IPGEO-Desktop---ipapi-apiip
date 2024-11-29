@@ -19,9 +19,8 @@ namespace IPGEO
 {
     public partial class Form1 : Form
     {
-        string apiKeysFile;
+        string apiKeysFile = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
         string apiSecret;
-
         public Form1()
         {
             InitializeComponent();
@@ -46,7 +45,6 @@ namespace IPGEO
         {
             richTextBox1.Clear();
             string ipAddress = textBox2.Text;
-            richTextBox1.Clear();
             if (!IPAddress.TryParse(ipAddress, out _))
             {
                 MessageBox.Show("Érvénytelen IP-cím formátum!");
@@ -192,8 +190,7 @@ namespace IPGEO
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
             if (radioButton2.Checked)
-            {    
-                apiKeysFile = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+            {
                 apiSecret = apiKeysFile + "\\apiip.api";
                 if (File.Exists(apiSecret))
                 {
@@ -211,7 +208,6 @@ namespace IPGEO
         {
             if (radioButton4.Checked)
             {
-                apiKeysFile = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
                 apiSecret = apiKeysFile + "\\ipgeo.api";
                 if (File.Exists(apiSecret))
                 {
