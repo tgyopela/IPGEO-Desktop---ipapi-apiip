@@ -59,7 +59,6 @@ namespace IPGEO
             if (radioButton1.Checked)
             {
                 url = $"{IpApiBaseUrl}{ipAddress}/json";
-                string response = await PerformHttpRequestAsync(url);
                 await ProcessResponse(url);
             }
             else if (radioButton2.Checked)
@@ -72,7 +71,6 @@ namespace IPGEO
                     return;
                 }
                 url = $"{ApiIpBaseUrl}{ipAddress}&accessKey={textBox3.Text}&output=json";
-                string response = await PerformHttpRequestAsync(url);
                 await ProcessResponse(url);
             }
             else if (radioButton3.Checked)
@@ -90,7 +88,6 @@ namespace IPGEO
                     return;
                 }
                 url = $"{IpGeolocationBaseUrl}{textBox3.Text}&ip={textBox2.Text}&output=json";
-                string response = await PerformHttpRequestAsync(url);
                 await ProcessResponse(url);
             }
         }
@@ -158,11 +155,19 @@ namespace IPGEO
 
         private async Task ProcessResponse(string url)
         {
-            string response = await PerformHttpRequestAsync(url);
-            if (response != null)
+            try
             {
-                string formattedJson = FormatJson(response);
-                richTextBox1.Text = formattedJson;
+                Cursor = Cursors.WaitCursor; // Várakozási kurzor
+                string response = await PerformHttpRequestAsync(url);
+                if (response != null)
+                {
+                    string formattedJson = FormatJson(response);
+                    richTextBox1.Text = formattedJson;
+                }
+            }
+            finally
+            {
+                Cursor = Cursors.Default; // Alapértelmezett kurzor
             }
         }
 
