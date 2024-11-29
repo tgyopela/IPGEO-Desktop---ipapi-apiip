@@ -60,7 +60,7 @@
             // 
             this.richTextBox1.Location = new System.Drawing.Point(538, 132);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(676, 436);
+            this.richTextBox1.Size = new System.Drawing.Size(676, 404);
             this.richTextBox1.TabIndex = 1;
             this.richTextBox1.Text = "";
             // 
@@ -129,7 +129,7 @@
             this.listBox1.ItemHeight = 16;
             this.listBox1.Location = new System.Drawing.Point(12, 132);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(445, 436);
+            this.listBox1.Size = new System.Drawing.Size(445, 404);
             this.listBox1.TabIndex = 21;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged_1);
             // 
@@ -184,19 +184,20 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(852, 93);
+            this.button3.Location = new System.Drawing.Point(461, 392);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(183, 23);
+            this.button3.Size = new System.Drawing.Size(71, 23);
             this.button3.TabIndex = 24;
             this.button3.Text = "teszt";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Visible = false;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1236, 610);
+            this.ClientSize = new System.Drawing.Size(1226, 548);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.radioButton3);
             this.Controls.Add(this.textBox3);

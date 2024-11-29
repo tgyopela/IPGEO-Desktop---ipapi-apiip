@@ -15,14 +15,27 @@ using System.Security.Policy;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
+using System.IO;
 namespace IPGEO
 {
     public partial class Form1 : Form
     {
+        string apiKeysFile;
+        string apiSecret;
 
         public Form1()
         {
             InitializeComponent();
+            apiKeysFile = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+            apiSecret = apiKeysFile + "\\apy.txt";
+            if (File.Exists(apiSecret))
+            {
+                textBox3.Text = File.ReadAllText(apiSecret);
+            }
+            else
+            {
+                
+            }
         }
 
         private const string ApiIpBaseUrl = "https://apiip.net/api/check?ip=";
