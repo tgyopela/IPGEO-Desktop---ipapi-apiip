@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Net;
-using System.Security.Policy;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
@@ -26,7 +25,6 @@ namespace IPGEO
         public Form1()
         {
             InitializeComponent();
-        
         }
 
         static Form1()
@@ -49,12 +47,11 @@ namespace IPGEO
             richTextBox1.Clear();
             string ipAddress = textBox2.Text;
             richTextBox1.Clear();
-            /*
-            if (!Regex.IsMatch(ipAddress, @"^(?:\d{1,3}\.){3}\d{1,3}$"))
+            if (!IPAddress.TryParse(ipAddress, out _))
             {
                 MessageBox.Show("Érvénytelen IP-cím formátum!");
                 return;
-            }*/
+            }
             string url = null;
             if (radioButton1.Checked)
             {
