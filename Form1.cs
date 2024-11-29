@@ -184,7 +184,7 @@ namespace IPGEO
         }
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.F1) {button2_Click(sender, e);}
+            if (e.KeyCode == Keys.Enter) {button2_Click(sender, e);}
         }
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
